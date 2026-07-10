@@ -71,29 +71,70 @@
 
     /* hero — poster lockup */
     header.hero { padding: 44px 0 36px; text-align: center; }
-    .launch-pill {
-      display: inline-flex; align-items: center; gap: 9px; margin-bottom: 30px;
-      border: 1px solid rgba(34, 211, 238, 0.4); border-radius: 999px; padding: 7px 18px;
-      font-size: 13px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
-      color: var(--cyan); background: rgba(34, 211, 238, 0.06);
+
+    /* big animated COMING SOON button */
+    @property --angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
+    .coming {
+      position: relative; display: inline-flex; align-items: center; gap: 14px;
+      margin-bottom: 30px; padding: 15px 40px; border-radius: 999px; overflow: hidden;
+      font-size: clamp(15px, 2.4vw, 19px); font-weight: 800; letter-spacing: 0.24em;
+      text-transform: uppercase; color: #fff; cursor: default;
+      background:
+        linear-gradient(var(--bg), var(--bg)) padding-box,
+        conic-gradient(from var(--angle), var(--purple), var(--blue), var(--cyan), var(--violet), var(--purple)) border-box;
+      border: 2px solid transparent;
+      box-shadow: 0 0 36px rgba(139, 61, 255, 0.35), 0 0 90px rgba(34, 211, 238, 0.14);
+      animation: borderspin 4s linear infinite;
     }
-    [dir="rtl"] .launch-pill { letter-spacing: 0; }
-    .launch-pill .dot {
-      width: 8px; height: 8px; border-radius: 50%; background: var(--cyan);
-      animation: pulse 1.6s ease-in-out infinite;
+    [dir="rtl"] .coming { letter-spacing: 0.06em; }
+    @keyframes borderspin { to { --angle: 360deg; } }
+    .coming::after {
+      content: ''; position: absolute; inset: 0; pointer-events: none;
+      background: linear-gradient(115deg, transparent 32%, rgba(255, 255, 255, 0.28) 50%, transparent 68%);
+      transform: translateX(-130%);
+      animation: shine 3.4s ease-in-out infinite;
     }
-    @keyframes pulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.55); }
-      50%      { box-shadow: 0 0 0 9px rgba(34, 211, 238, 0); }
+    @keyframes shine {
+      0% { transform: translateX(-130%); }
+      55%, 100% { transform: translateX(130%); }
+    }
+    .coming .rocket { font-size: 1.35em; animation: rocketbob 2.2s ease-in-out infinite; }
+    @keyframes rocketbob {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      30%      { transform: translateY(-5px) rotate(-10deg); }
+      60%      { transform: translateY(2px) rotate(6deg); }
+    }
+
+    /* orbiting module icons around the mark */
+    .orbit-wrap {
+      position: relative; width: 235px; height: 235px; margin: 4px auto 16px;
+      display: flex; align-items: center; justify-content: center;
     }
     .hero__mark {
-      width: 108px; height: auto; margin-bottom: 22px;
+      width: 108px; height: auto;
       animation: floaty 5s ease-in-out infinite;
       filter: drop-shadow(0 0 44px rgba(139, 61, 255, 0.4));
     }
     @keyframes floaty {
       0%, 100% { transform: translateY(0); }
       50%      { transform: translateY(-12px); }
+    }
+    .orbit-ring {
+      position: absolute; inset: 6px; border-radius: 50%;
+      border: 1px dashed rgba(255, 255, 255, 0.12);
+      animation: ringspin 40s linear infinite;
+    }
+    @keyframes ringspin { to { transform: rotate(360deg); } }
+    .orb {
+      position: absolute; top: 50%; left: 50%; width: 40px; height: 40px; margin: -20px;
+      display: flex; align-items: center; justify-content: center; font-size: 17px;
+      border-radius: 50%; background: rgba(20, 27, 51, 0.92); border: 1px solid var(--border-strong);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+      animation: orbit 22s linear infinite; animation-delay: var(--d);
+    }
+    @keyframes orbit {
+      from { transform: rotate(0deg) translateX(112px) rotate(0deg); }
+      to   { transform: rotate(360deg) translateX(112px) rotate(-360deg); }
     }
     h1.lockup {
       font-size: clamp(44px, 7.4vw, 74px); font-weight: 800; letter-spacing: -0.03em; line-height: 1.05;
@@ -128,6 +169,19 @@
     .tagline .c2 { color: var(--blue); }
     .tagline .c3 { color: var(--teal); }
     .tagline .c4 { color: var(--purple); }
+
+    /* live typewriter ticker — the platform "doing things" */
+    .ticker {
+      min-height: 24px; margin: -8px 0 24px; font-size: 14.5px; font-weight: 600;
+      letter-spacing: 0.05em; color: var(--cyan);
+    }
+    [dir="rtl"] .ticker { letter-spacing: 0; }
+    .ticker .caret {
+      display: inline-block; width: 2px; height: 15px; margin-inline-start: 5px;
+      background: var(--cyan); vertical-align: middle;
+      animation: caretblink 1s step-end infinite;
+    }
+    @keyframes caretblink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
     /* pillars */
     .pillars { display: flex; justify-content: center; align-items: center; gap: clamp(14px, 3.4vw, 30px); flex-wrap: wrap; margin-bottom: 30px; }
@@ -170,8 +224,8 @@
     .screen__bar i:nth-child(2) { background: #febc2e; }
     .screen__bar i:nth-child(3) { background: #28c840; }
     .screen__title { margin-inline-start: 10px; font-size: 12.5px; color: var(--muted); }
-    .stage { position: relative; height: 330px; }
-    @media (max-width: 640px) { .stage { height: 310px; } }
+    .stage { position: relative; height: 352px; }
+    @media (max-width: 640px) { .stage { height: 340px; } }
     .scene {
       position: absolute; inset: 0; padding: 28px 34px;
       opacity: 0; transform: translateY(14px) scale(0.99); transition: opacity .6s ease, transform .6s ease;
@@ -354,14 +408,83 @@
     .eco .card:last-child .eco__tag { border-color: rgba(34, 211, 238, 0.5); color: var(--cyan); }
     [dir="rtl"] .eco__tag { letter-spacing: 0; }
 
-    .strip {
-      border: 1px solid var(--border); border-radius: var(--radius);
-      background: linear-gradient(90deg, rgba(139, 61, 255, 0.08), rgba(34, 211, 238, 0.08));
-      padding: 22px 26px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    /* forge banner — closing statement */
+    .forge-banner {
+      position: relative; overflow: hidden; border-radius: 16px;
+      display: flex; align-items: center; gap: 26px; flex-wrap: wrap;
+      padding: 32px 30px 36px;
+      border: 1px solid transparent;
+      background:
+        linear-gradient(180deg, rgba(20, 27, 51, 0.88), rgba(11, 16, 32, 0.92)) padding-box,
+        linear-gradient(90deg, rgba(139, 61, 255, 0.55), rgba(34, 211, 238, 0.55)) border-box;
     }
-    .dot-live { width: 9px; height: 9px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 12px var(--cyan); flex-shrink: 0; animation: pulse 1.6s ease-in-out infinite; }
-    .strip p { color: var(--muted); font-size: 14.5px; }
-    .strip strong { color: var(--text); }
+    .forge-banner::after {
+      content: ''; position: absolute; bottom: 0; left: 0; height: 3px; width: 100%;
+      background: linear-gradient(90deg, var(--purple), var(--blue), var(--cyan), var(--purple));
+      background-size: 250% 100%;
+      animation: gradshift 5s linear infinite;
+    }
+    .fb-icon {
+      position: relative; font-size: 46px; line-height: 1; flex-shrink: 0;
+      animation: hammer 2.4s ease-in-out infinite; transform-origin: 70% 90%;
+    }
+    @keyframes hammer {
+      0%, 100% { transform: rotate(0deg); }
+      12%      { transform: rotate(-20deg); }
+      22%      { transform: rotate(9deg); }
+      32%      { transform: rotate(0deg); }
+    }
+    .spark {
+      position: absolute; bottom: 8px; left: 55%; width: 5px; height: 5px; border-radius: 50%;
+      background: var(--cyan); opacity: 0; --sx: 18px;
+      animation: sparkfly 2.4s ease-out infinite;
+    }
+    .spark.s2 { --sx: -16px; background: var(--violet); animation-delay: .06s; }
+    .spark.s3 { --sx: 4px; background: #febc2e; animation-delay: .12s; }
+    @keyframes sparkfly {
+      0%, 20% { transform: translate(0, 0); opacity: 0; }
+      26%     { opacity: 1; }
+      60%     { transform: translate(var(--sx), -34px); opacity: 0; }
+      100%    { opacity: 0; }
+    }
+    .fb-text { flex: 1; min-width: 260px; }
+    .fb-text h3 { font-size: 20px; font-weight: 800; margin-bottom: 7px; }
+    .fb-text h3 .grad2 {
+      background: linear-gradient(90deg, var(--violet), var(--cyan));
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .fb-text p { color: var(--muted); font-size: 14.5px; max-width: 64ch; }
+
+    /* agents scene */
+    .agentflow { display: flex; flex-direction: column; gap: 9px; max-width: 560px; }
+    .af-node {
+      display: flex; align-items: center; gap: 10px; align-self: flex-start;
+      border: 1px solid var(--border-strong); border-radius: 12px; padding: 9px 16px;
+      font-size: 13.5px; background: rgba(255, 255, 255, 0.05); opacity: 0;
+    }
+    .af-node em { font-style: normal; color: var(--muted); }
+    .scene.active .af-node { animation: bubblein .5s ease forwards; }
+    .scene.active .af-agent { animation-delay: .45s; }
+    .af-agent { font-size: 16px; }
+    .af-arrow {
+      width: 2px; height: 13px; margin-inline-start: 28px;
+      background: var(--border-strong); opacity: 0; position: relative;
+    }
+    .scene.active .af-arrow { animation: fadein .3s ease forwards; }
+    .scene.active .af-arrow:nth-of-type(2) { animation-delay: .35s; }
+    .scene.active .af-arrow:nth-of-type(4) { animation-delay: .85s; }
+    .scene.active .af-arrow:nth-of-type(6) { animation-delay: 2s; }
+    .af-tools { display: flex; gap: 9px; flex-wrap: wrap; }
+    .af-tool {
+      font-size: 12.5px; padding: 7px 14px; border-radius: 999px; opacity: 0;
+      border: 1px solid rgba(45, 212, 191, 0.5); color: var(--text); background: rgba(45, 212, 191, 0.08);
+    }
+    .scene.active .af-tool { animation: chipin .45s ease forwards; }
+    .scene.active .af-tool:nth-child(1) { animation-delay: 1s; }
+    .scene.active .af-tool:nth-child(2) { animation-delay: 1.35s; }
+    .scene.active .af-tool:nth-child(3) { animation-delay: 1.7s; }
+    .af-done { border-color: rgba(40, 200, 64, 0.55); color: #7ee2a0; }
+    .scene.active .af-done { animation-delay: 2.2s; }
 
     footer { border-top: 1px solid var(--border); margin-top: 40px; padding: 34px 0 44px; }
     .footer__tagline { font-size: 15px; margin-bottom: 18px; text-align: center; }
@@ -436,12 +559,21 @@
     </nav>
 
     <header class="hero">
-      <div class="launch-pill"><span class="dot"></span><span data-i18n="pill">Launching soon</span></div><br>
-      <img class="hero__mark" src="assets/forgeai-mark.png" alt="">
+      <div class="coming"><span class="rocket">🚀</span><span data-i18n="pill">Coming Soon</span></div><br>
+      <div class="orbit-wrap">
+        <span class="orbit-ring"></span>
+        <img class="hero__mark" src="assets/forgeai-mark.png" alt="">
+        <span class="orb" style="--d:0s">💬</span>
+        <span class="orb" style="--d:-4.4s">📚</span>
+        <span class="orb" style="--d:-8.8s">🤖</span>
+        <span class="orb" style="--d:-13.2s">📊</span>
+        <span class="orb" style="--d:-17.6s">⚙️</span>
+      </div>
       <h1 class="lockup">Forge<span class="ai">AI</span></h1>
       <div class="studio-line">STUDIO</div>
       <div class="workspace-sub" data-i18n="workspace">Enterprise AI Workspace</div>
       <p class="tagline" data-i18n="tagline">Your all-in-one platform to <b class="c1">Build</b>, <b class="c2">Connect</b>, <b class="c3">Reason</b> and <b class="c4">Automate</b> AI with ease.</p>
+      <div class="ticker"><span id="tickerText"></span><span class="caret"></span></div>
 
       <div class="pillars">
         <span class="pillar" style="color:var(--violet)">
@@ -502,6 +634,22 @@
             </div>
           </div>
           <div class="scene" data-scene="2">
+            <div class="scene__label" data-i18n="s5label">AI Agents — delegate the work</div>
+            <div class="agentflow">
+              <div class="af-node"><b data-i18n="afGoal">Goal</b><em data-i18n="afGoalTxt">"Prepare the weekly supplier report"</em></div>
+              <div class="af-arrow"></div>
+              <div class="af-node af-agent">🤖 <span data-i18n="afAgent">Agent planning</span> <span class="dots"><i></i><i></i><i></i></span></div>
+              <div class="af-arrow"></div>
+              <div class="af-tools">
+                <span class="af-tool" data-i18n="afT1">🔍 Search knowledge</span>
+                <span class="af-tool" data-i18n="afT2">📄 Extract data</span>
+                <span class="af-tool" data-i18n="afT3">📊 Compose report</span>
+              </div>
+              <div class="af-arrow"></div>
+              <div class="af-node af-done">✓ <span data-i18n="afDone">Done — awaiting your approval</span></div>
+            </div>
+          </div>
+          <div class="scene" data-scene="3">
             <div class="scene__label" data-i18n="s3label">Reason — knowledge, connected</div>
             <svg class="graph" viewBox="0 0 560 230" aria-hidden="true">
               <line x1="120" y1="60"  x2="280" y2="115"/>
@@ -522,7 +670,7 @@
               <text x="382" y="207">Payment</text>
             </svg>
           </div>
-          <div class="scene" data-scene="3">
+          <div class="scene" data-scene="4">
             <div class="scene__label" data-i18n="s4label">Voice — speak 50+ languages</div>
             <div class="voice">
               <div class="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
@@ -539,8 +687,8 @@
     <!-- modules -->
     <section id="platform">
       <div class="kicker reveal" data-i18n="kickerPlatform">Capability Map</div>
-      <h2 class="reveal" data-i18n="platformTitle">One workspace, five modules</h2>
-      <p class="section-sub reveal" data-i18n="platformSub">Click a module to see what's inside — and the core technology behind it.</p>
+      <h2 class="reveal" data-i18n="platformTitle">One workspace, endless capabilities</h2>
+      <p class="section-sub reveal" data-i18n="platformSub">A glimpse of what's inside — click any module to explore it, and the core technology behind it.</p>
       <div class="grid">
         <button class="module reveal" type="button">
           <span class="module__head">
@@ -603,7 +751,7 @@
             </span>
             <span class="module__chev">▼</span>
           </span>
-          <p data-i18n="m3b">Build and orchestrate intelligent agents that automate real tasks with your tools and knowledge.</p>
+          <p data-i18n="m3b">Describe the goal — agents plan the steps, use your tools and knowledge, and bring the result back for your approval.</p>
           <span class="module__details">
             <ul>
               <li data-i18n="m3d1">Custom agent framework</li>
@@ -612,6 +760,8 @@
               <li data-i18n="m3d4">Knowledge-aware agents</li>
               <li data-i18n="m3d5">Workflow automation</li>
               <li data-i18n="m3d6">Background runs + approvals</li>
+              <li data-i18n="m3d7">Agent studio</li>
+              <li data-i18n="m3d8">Human-in-the-loop control</li>
             </ul>
             <span class="module__techlabel" data-i18n="techLabel3">Core technology</span>
             <span class="module__tech"><span>Agent orchestration</span><span>MCP tools</span><span>Async job engine</span></span>
@@ -686,9 +836,12 @@
     </section>
 
     <section>
-      <div class="strip reveal">
-        <span class="dot-live"></span>
-        <p data-i18n="statusLine"><strong>In active development.</strong> The public launch is coming — this page is the front door.</p>
+      <div class="forge-banner reveal">
+        <div class="fb-icon">⚒️<i class="spark"></i><i class="spark s2"></i><i class="spark s3"></i></div>
+        <div class="fb-text">
+          <h3><span data-i18n="forgeT1">Something powerful is</span> <span class="grad2" data-i18n="forgeT2">being forged.</span></h3>
+          <p data-i18n="forgeBody">Every capability on this page is already running in our lab — we're hammering out the final details. When the doors open, this is where you'll step in.</p>
+        </div>
       </div>
     </section>
 
@@ -750,7 +903,15 @@
   <script>
     // --- bilingual EN/AR with RTL flip ---
     const AR = {
-      pill: "الإطلاق قريباً",
+      pill: "قريباً",
+      s5label: "الوكلاء الأذكياء — فوّض العمل",
+      afGoal: "الهدف", afGoalTxt: "\"جهّز تقرير الموردين الأسبوعي\"",
+      afAgent: "الوكيل يخطط",
+      afT1: "🔍 البحث في المعرفة", afT2: "📄 استخراج البيانات", afT3: "📊 تجهيز التقرير",
+      afDone: "تم — بانتظار اعتمادك",
+      forgeT1: "شيء قوي", forgeT2: "يُصاغ الآن.",
+      forgeBody: "كل قدرة في هذه الصفحة تعمل فعلاً في مختبرنا — ونحن نصقل التفاصيل الأخيرة. عندما تُفتح الأبواب، من هنا ستدخل.",
+      m3d7: "استوديو الوكلاء", m3d8: "تحكم بشري في الحلقة",
       workspace: "مساحة عمل الذكاء الاصطناعي للمؤسسات",
       tagline: "منصتك الشاملة لتـ<b class=\"c1\">بني</b> و<b class=\"c2\">تربط</b> و<b class=\"c3\">تستدل</b> و<b class=\"c4\">تؤتمت</b> الذكاء الاصطناعي بسهولة.",
       pBuild: "البناء", pConnect: "الربط", pReason: "الاستدلال", pAutomate: "الأتمتة",
@@ -765,8 +926,8 @@
       s3label: "الاستدلال — معرفة مترابطة",
       s4label: "الصوت — تحدث بأكثر من ٥٠ لغة",
       langMore: "+ أكثر من ٥٠",
-      kickerPlatform: "خريطة القدرات", platformTitle: "مساحة عمل واحدة، خمس وحدات",
-      platformSub: "انقر على أي وحدة لترى ما بداخلها — والتقنيات الأساسية خلفها.",
+      kickerPlatform: "خريطة القدرات", platformTitle: "مساحة عمل واحدة، قدرات بلا حدود",
+      platformSub: "لمحة عمّا في الداخل — انقر على أي وحدة لاستكشافها والتقنيات الأساسية خلفها.",
       m1k: "مساحة عمل · متعدد الوسائط · صوت", m1t: "المحادثة الذكية",
       m1b: "ذكاء اصطناعي محادثاتي بنماذج متقدمة — مستند إلى معرفتك، بلغتك.",
       m1d1: "نماذج محلية وسحابية", m1d2: "توجيه المزوّدين والافتراضات", m1d3: "الرؤية وفهم الصور",
@@ -778,7 +939,7 @@
       m2d4: "استرجاع متجهي وهجين", m2d5: "إعادة ترتيب ذكية", m2d6: "استشهادات موثّقة",
       m2d7: "شبكة المعرفة", m2d8: "مختبر الاسترجاع",
       m3k: "أتمتة · أدوات · تنسيق", m3t: "الوكلاء الأذكياء",
-      m3b: "ابنِ ونسّق وكلاء أذكياء يؤتمتون مهاماً حقيقية بأدواتك ومعرفتك.",
+      m3b: "صف الهدف — يخطط الوكلاء الخطوات، ويستخدمون أدواتك ومعرفتك، ويعيدون النتيجة لاعتمادك.",
       m3d1: "إطار وكلاء مخصص", m3d2: "تكامل الأدوات", m3d3: "طبقات الذاكرة",
       m3d4: "وكلاء واعون بالمعرفة", m3d5: "أتمتة سير العمل", m3d6: "تشغيل خلفي + اعتمادات",
       m4k: "مراقبة · تشغيل · حوكمة", m4t: "التحليلات والمراقبة",
@@ -794,7 +955,6 @@
       kickerEco: "المنظومة", ecoTitle: "محرك واحد، تطبيقات متعددة",
       ecoStudioT: "محرك الذكاء", ecoStudioB: "محادثة ومعرفة ووكلاء وفهم للمستندات — مساحة العمل التي تُبنى عليها بقية التطبيقات.",
       ecoProcureT: "المشتريات بصورة جديدة", ecoProcureB: "من المصدر إلى الدفع بذكاء مدمج — موردون واعتمادات وعروض أسعار تفهم نفسها.",
-      statusLine: "قيد التطوير النشط. الإطلاق العام قادم — وهذه الصفحة هي البوابة.",
       footTagline: "منصتك الشاملة لتـ<b style=\"color:var(--violet)\">بني</b> و<b style=\"color:var(--blue)\">تربط</b> و<b style=\"color:var(--teal)\">تستدل</b> و<b style=\"color:var(--purple)\">تؤتمت</b> الذكاء الاصطناعي بسهولة.",
       fbSecure: "آمن", fbScalable: "قابل للتوسع", fbReady: "جاهز للمؤسسات",
       modalTitle: "التقنيات الأساسية",
@@ -890,6 +1050,55 @@
       entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
     }, { threshold: 0.12 });
     document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+    // --- typewriter ticker: the platform "at work" ---
+    const TICKER_EN = [
+      'Building intelligent workspaces…',
+      'Connecting models, data & tools…',
+      'Reasoning over your knowledge…',
+      'Agents automating the busywork…',
+      'Speaking 50+ languages…',
+    ];
+    const TICKER_AR = [
+      'نبني مساحات عمل ذكية…',
+      'نربط النماذج والبيانات والأدوات…',
+      'نستدل على معرفتك…',
+      'وكلاء يؤتمتون الأعمال الروتينية…',
+      'نتحدث بأكثر من ٥٠ لغة…',
+    ];
+    (function ticker() {
+      const el = document.getElementById('tickerText');
+      const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduced) { el.textContent = TICKER_EN[0]; return; }
+      let wordIdx = 0, charIdx = 0, deleting = false;
+      function words() { return document.documentElement.lang === 'ar' ? TICKER_AR : TICKER_EN; }
+      (function step() {
+        const word = words()[wordIdx % words().length];
+        charIdx += deleting ? -1 : 1;
+        el.textContent = word.slice(0, Math.max(0, charIdx));
+        let delay = deleting ? 26 : 46;
+        if (!deleting && charIdx >= word.length) { deleting = true; delay = 2100; }
+        else if (deleting && charIdx <= 0) { deleting = false; wordIdx++; delay = 420; }
+        setTimeout(step, delay);
+      })();
+    })();
+
+    // --- 3D tilt on the product reel (platform depth) ---
+    (function tilt() {
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const screen = document.querySelector('.screen');
+      if (!screen) return;
+      screen.style.transition = 'transform .25s ease';
+      addEventListener('pointermove', (e) => {
+        const r = screen.getBoundingClientRect();
+        if (r.bottom < 0 || r.top > innerHeight) return;
+        const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+        const dx = Math.max(-1, Math.min(1, (e.clientX - cx) / (r.width / 2)));
+        const dy = Math.max(-1, Math.min(1, (e.clientY - cy) / (r.height / 2)));
+        screen.style.transform = `perspective(1100px) rotateY(${dx * 3.5}deg) rotateX(${dy * -3}deg)`;
+      });
+      addEventListener('pointerleave', () => { screen.style.transform = ''; });
+    })();
 
     // --- ambient particle field ---
     (function particles() {
