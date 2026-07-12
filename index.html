@@ -346,6 +346,53 @@
     }
     .reel-dots button.on { background: var(--cyan); transform: scale(1.35); }
 
+    /* live unique-visitor hero badge */
+    .hero-visitors { margin: -4px 0 24px; }
+    .vis-badge {
+      position: relative; display: inline-flex; align-items: center; gap: 12px;
+      padding: 11px 28px; border-radius: 999px; overflow: hidden;
+      background:
+        linear-gradient(rgba(15, 21, 44, 0.95), rgba(15, 21, 44, 0.95)) padding-box,
+        conic-gradient(from var(--angle), var(--purple), var(--blue), var(--cyan), var(--violet), var(--purple)) border-box;
+      border: 1.5px solid transparent;
+      box-shadow: 0 0 26px rgba(139, 61, 255, 0.24), 0 0 60px rgba(34, 211, 238, 0.1);
+      animation: borderspin 5s linear infinite;
+    }
+    .vis-badge::after {
+      content: ''; position: absolute; inset: 0; pointer-events: none;
+      background: linear-gradient(115deg, transparent 32%, rgba(255, 255, 255, 0.16) 50%, transparent 68%);
+      transform: translateX(-130%);
+      animation: shine 3.8s ease-in-out infinite;
+    }
+    .vis-dot {
+      width: 8px; height: 8px; border-radius: 50%; background: #4ADE80; flex-shrink: 0;
+      box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.55);
+      animation: vispulse 1.8s ease-out infinite;
+    }
+    @keyframes vispulse {
+      0%   { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.55); }
+      70%  { box-shadow: 0 0 0 10px rgba(74, 222, 128, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
+    }
+    .vis-num {
+      font-size: clamp(22px, 3.4vw, 27px); font-weight: 800; line-height: 1;
+      font-variant-numeric: tabular-nums; min-width: 3ch; text-align: center;
+      background: linear-gradient(135deg, var(--violet), var(--blue) 55%, var(--cyan));
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+      filter: drop-shadow(0 0 14px rgba(37, 99, 235, 0.45));
+    }
+    .vis-num.landed { animation: numpop .55s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    @keyframes numpop {
+      0%   { transform: scale(1); }
+      45%  { transform: scale(1.18); filter: drop-shadow(0 0 26px rgba(34, 211, 238, 0.85)); }
+      100% { transform: scale(1); }
+    }
+    .vis-lbl {
+      color: var(--muted); font-size: 12px; font-weight: 800;
+      letter-spacing: 0.2em; text-transform: uppercase;
+    }
+    [dir="rtl"] .vis-lbl { letter-spacing: 0.03em; }
+
     /* sections */
     section { padding: 56px 0; }
     .kicker {
@@ -575,6 +622,16 @@
       <div class="studio-line">STUDIO</div>
       <div class="workspace-sub" data-i18n="workspace">Enterprise AI Workspace</div>
       <p class="tagline" data-i18n="tagline">Your all-in-one platform to <b class="c1">Build</b>, <b class="c2">Connect</b>, <b class="c3">Reason</b> and <b class="c4">Automate</b> AI with ease.</p>
+
+      <!-- live unique-visitor badge -->
+      <div class="hero-visitors" id="visitors" hidden>
+        <span class="vis-badge">
+          <span class="vis-dot"></span>
+          <span class="vis-num" id="visCount" role="status" aria-live="polite">0</span>
+          <span class="vis-lbl" data-i18n="visLabel">unique visitors</span>
+        </span>
+      </div>
+
       <div class="ticker"><span id="tickerText"></span><span class="caret"></span></div>
 
       <div class="pillars">
@@ -906,6 +963,7 @@
     // --- bilingual EN/AR with RTL flip ---
     const AR = {
       pill: "قريباً",
+      visLabel: "زائر فريد",
       s5label: "الوكلاء الأذكياء — فوّض العمل",
       afGoal: "الهدف", afGoalTxt: "\"جهّز تقرير الموردين الأسبوعي\"",
       afAgent: "الوكيل يخطط",
@@ -1148,6 +1206,44 @@
         }
         requestAnimationFrame(tick);
       })();
+    })();
+
+    // --- live unique-visitor badge (Abacus free counter API) ---
+    (async function visitors() {
+      const NS = 'forgeai-studio-com';
+      // keep the production count clean: localhost / previews hit a separate dev key
+      const KEY = location.hostname === 'forgeai-studio.com' ? 'unique-visitors' : 'unique-visitors-dev';
+      const BASE = 120; // display starts from this baseline; API adds real visitors on top
+      const SEEN = 'forgeai.landing.visited';
+      const firstVisit = !localStorage.getItem(SEEN);
+      const url = 'https://abacus.jasoncameron.dev/' + (firstVisit ? 'hit' : 'get') + '/' + NS + '/' + KEY;
+      let value;
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('counter ' + res.status);
+        value = (await res.json()).value;
+      } catch { return; /* counter unreachable — badge stays hidden */ }
+      if (typeof value !== 'number') return;
+      if (firstVisit) localStorage.setItem(SEEN, String(Date.now()));
+
+      const total = BASE + value;
+      const out = document.getElementById('visCount');
+      document.getElementById('visitors').hidden = false;
+
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        out.textContent = total.toLocaleString('en-US');
+        return;
+      }
+      // eye-catcher: count up 0 → total, ease-out, pop on landing
+      const DURATION = 2400;
+      const start = performance.now();
+      (function frame(now) {
+        const t = Math.min(1, (now - start) / DURATION);
+        const eased = 1 - Math.pow(1 - t, 3);
+        out.textContent = Math.round(eased * total).toLocaleString('en-US');
+        if (t < 1) { requestAnimationFrame(frame); return; }
+        out.classList.add('landed');
+      })(start);
     })();
 
     document.getElementById('year').textContent = new Date().getFullYear();
